@@ -14,9 +14,9 @@ class Persister:
 
     Examples
     --------
-    >>> pers = Persister('resources/skirt.jpg')
+    >>> pers = Persister('resources/bag.png')
     >>> pers.ext
-    'jpg'
+    'png'
     '''
 
     JPG = 'jpg'
@@ -32,8 +32,9 @@ class Persister:
 
     def __iter__(self):
         for i, data in enumerate(self.augmenter(self.norm)):
-            name = f'{self.label}_{i:04}.{self.ext}'
-            img = plt.imsave(BytesIO(), data)
+            name = f'{self.label}_{i:03}.{self.ext}'
+            img = BytesIO()
+            plt.imsave(img, data)
             filepath = self.action(name, img)
             yield(self.label, filepath)
 

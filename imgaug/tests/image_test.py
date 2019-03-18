@@ -56,8 +56,8 @@ class TestImage(unittest.TestCase):
    
     def test_augmenting_attributes(self):
         aug = image.Augmenter()
-        self.assertEqual(len(aug.transformers), 6)
-        self.assertEqual(aug.count, 1029)
+        self.assertEqual(len(aug.transformers), 7)
+        self.assertEqual(aug.count, 1000)
     
     def test_augmenting(self):
         aug = image.Augmenter(.01)

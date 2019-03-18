@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 from scipy.ndimage import uniform_filter
 from skimage.exposure import adjust_gamma
-from skimage.transform import rescale, rotate
+from skimage.transform import AffineTransform, rescale, rotate, warp
 from skimage.util import random_noise
 import numpy as np
 from imgaug.logger import BASE as logger
@@ -142,6 +142,7 @@ class Augmenter:
     - rescaling and cropping
     - adding random noise
     - rotating
+    - skewing
 
     Warning
     -------
@@ -150,9 +151,9 @@ class Augmenter:
 
     Examples
     --------
-    >>> aug = Augmenter(.75)
+    >>> aug = Augmenter()
     >>> aug.count
-    769
+    1000
     '''
 
     CUTOFF = 1.
@@ -160,11 +161,12 @@ class Augmenter:
     NOISE_MODE = 'speckle'
     BLUR = range(2, 7, 1)
     FLIP = (np.s_[:, ::-1], np.s_[::-1, :])
-    GAMMA = np.arange(.1, 3., .02)
-    NOISE = np.arange(.0005, .0260, .0003)
-    SCALE = np.arange(1.05, 3.35, .0075)
-    ROTATE = np.arange(-157, 157, .65)
-    RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE)
+    GAMMA = np.arange(.1, 3.2, .02)
+    NOISE = np.arange(.0005, .025, .0005)
+    SCALE = np.arange(1.05, 3.6, .01)
+    ROTATE = np.arange(-155, 155, .6)
+    SKEW = np.arange(-.8, .8, .1)
+    RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SKEW)
 
     def __init__(self, cutoff=CUTOFF):
         self.cutoff = float(cutoff)
@@ -225,6 +227,10 @@ class Augmenter:
     def _tr_rotate(self, img, ang):
         cval = 1. if self._RGB(img) else 0
         yield rotate(img, ang, cval=cval)
+
+    def _tr_skew(self, img, shear):
+        tf = AffineTransform(shear=shear)
+        yield warp(img, inverse_map=tf)
 
     def _RGB(self, img):
         return img.shape[-1] == 3

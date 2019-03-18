@@ -61,20 +61,13 @@ img.shape
 ```
 
 ## Augmenter
-The number of images is augmented by three orders of magnitude (depending on the cutoff attribute) by applying different transformations to the original one:
-- rescaling and cropping
-- adding random noise
-- rotating
-- adjusting gamma
-- blurring
-- flipping (horizontally and vertically)
-
-Transformations are applied by using generators, thus sparing memory consumption.
+The number of images is augmented by three orders of magnitude (depending on the cutoff attribute) by applying different transformations to the original one.  
+Transformations are applied by using generators, thus saving memory consumption.
 
 ```python
-aug = Augmenter(.75)
+aug = Augmenter()
 aug.count
-769
+1000
 ```
 
 ## Persister

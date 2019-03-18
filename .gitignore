@@ -47,3 +47,6 @@ venv.bak/
 
 # Logs
 imgaug.log
+
+# Mac OS
+.DS_Store
