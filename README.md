@@ -5,6 +5,7 @@
   * [Versions](#versions)
   * [Virtualenv](#virtualenv)
   * [Installation](#installation)
+  * [Tests](#tests)
 * [Dataset](#dataset)
 * [Labeller](#labeller)
 * [Normalizer](#normalizer)
@@ -34,6 +35,17 @@ Update `pip` package manager:
 pip install pip --upgrade
 ...
 pip install -r requirements.txt
+```
+
+### Tests
+The library is covered, by fast, isolated unit and doc testing (the latter to grant reliable documentation):
+```shell
+python -m unittest discover -s imgaug -p '*'
+...................
+----------------------------------------------------------------------
+Ran 19 tests in 0.898s
+
+OK
 ```
 
 ## Dataset
