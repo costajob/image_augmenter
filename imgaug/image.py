@@ -11,6 +11,48 @@ import numpy as np
 from imgaug.logger import BASE as logger
 
 
+class Labeller:
+    '''
+    Synopsis
+    --------
+    Identifies the label based on the specified name, by checking special chars and
+    specified meaningful digits length.
+
+    Examples
+    --------
+    >>> lbl = Labeller()
+    >>> lbl('resources/1096023906001-c-suit-veletta-albino.jpg')
+    '1096023906001'
+    '''
+
+    MEANINGFUL_DIGITS = 13
+    SEPARATORS = ('-', '_')
+
+    def __init__(self, digits=MEANINGFUL_DIGITS, separators=SEPARATORS):
+        self.digits = int(digits)
+        self.separators = separators
+
+    def __call__(self, name):
+        name = path.basename(name)
+        for sep in self.separators:
+            label = self._tokenize(name, sep)
+            if label:
+                return label
+        return self._plain(name)
+
+    def _plain(self, name):
+        name, _ = name.split('.')
+        return name[:self.digits]
+
+    def _tokenize(self, name, sep):
+        if name.count(sep) > 0:
+            label = ''
+            for token in name.split(sep):
+                label += token
+                if len(label) >= self.digits:
+                    return label 
+
+
 class Normalizer:
     '''
     Synopsis
@@ -23,8 +65,8 @@ class Normalizer:
     --------
     >>> norm = Normalizer(size=128, canvas=True)
     >>> img = norm('resources/bag.png')
-    >>> img.size
-    (128, 128)
+    >>> img.shape
+    (128, 128, 4)
     '''
 
     SIZE = 32
@@ -44,7 +86,7 @@ class Normalizer:
         if img:
             if self.canvas:
                 img = self._canvas(img)
-            return img
+            return np.array(img)
 
     def _resize(self, name):
         img = self._img(name)
