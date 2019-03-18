@@ -6,11 +6,11 @@
   * [Virtualenv](#virtualenv)
   * [Installation](#installation)
   * [Tests](#tests)
-* [Dataset](#dataset)
-* [Labeller](#labeller)
-* [Normalizer](#normalizer)
-* [Augmenter](#augmenter)
-* [Persister](#persister)
+* [APIs](#apis)
+  * [Labeller](#labeller)
+  * [Normalizer](#normalizer)
+  * [Augmenter](#augmenter)
+  * [Persister](#persister)
 
 
 ## Scope
@@ -48,10 +48,12 @@ Ran 19 tests in 0.898s
 OK
 ```
 
-## Dataset
-The system is aimed to work with images of different sizes, saved as PNG or JPG files (supporting RGBA conversion).
+## APIs
+The library is composed by different collaborators, each with its specific responsibility.
+Each class tries to expose a minimal public APIs in the form of `__call__` or `__iter__` methods (when generators are used).  
+The classes are aimed to work with one image at time, in case you need to transform and augment multiple images, avoid creating multiple instances of the classes, just change the argument of the `__call__` function (but for `Persister`, which need a new instance and/or instance attribute modification).
 
-## Labeller
+### Labeller
 The target label is extracted directly by inspecting the image name and trying to extract meaningful information (customisable).
 
 ```python
@@ -64,7 +66,7 @@ lbl('resources/109-602-3906-001-c-suit-veletta-albino.jpg')
 '1096023906'
 ```
 
-## Normalizer
+### Normalizer
 The images are normalized by:
 - resizing them to the specified max size (default to 256 pixels)
 - optionally applying a squared, transparent/backgound canvas and centering the image on it, thus avoiding any deformation
@@ -76,7 +78,7 @@ img.shape
 (128, 128, 4)
 ```
 
-## Augmenter
+### Augmenter
 The number of images is augmented by three orders of magnitude (depending on the cutoff attribute) by applying different transformations to the original one.  
 Transformations are applied by using generators, thus saving memory consumption.
 
@@ -90,7 +92,7 @@ aug('resources/bag.png')
 <generator object Augmenter.__call__ at 0x125354480>
 ```
 
-## Persister
+### Persister
 Images are persisted upon normalization and augmentation, by passing a `BytesIO` object to the specified action function. 
 The persister supports iteration by yielding the image label and the function return value (typically the saved path), allowing to generate CSV files specific to cloud platforms (i.e. [Google Vision APIs](https://cloud.google.com/vision/automl/docs/prepare)).
 
