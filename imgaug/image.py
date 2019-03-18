@@ -20,9 +20,9 @@ class Labeller:
 
     Examples
     --------
-    >>> lbl = Labeller()
-    >>> lbl('resources/1096023906001-c-suit-veletta-albino.jpg')
-    '1096023906001'
+    >>> lbl = Labeller(digits=10)
+    >>> lbl('resources/109-602-3906-001-c-suit-veletta-albino.jpg')
+    '1096023906'
     '''
 
     MEANINGFUL_DIGITS = 13
@@ -151,9 +151,9 @@ class Augmenter:
 
     Examples
     --------
-    >>> aug = Augmenter()
+    >>> aug = Augmenter(cutoff=.5)
     >>> aug.count
-    1000
+    498
     '''
 
     CUTOFF = 1.

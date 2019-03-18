@@ -55,15 +55,19 @@ The system is aimed to work with images of different sizes, saved as PNG or JPG 
 The target label is extracted directly by inspecting the image name and trying to extract meaningful information (customisable).
 
 ```python
-lbl = Labeller()
-lbl('resources/1096023906001-c-suit-veletta-albino.jpg')
-'1096023906001'
+lbl = Labeller(digits=10)
+
+lbl('resources/bag.png')
+'bag'
+
+lbl('resources/109-602-3906-001-c-suit-veletta-albino.jpg')
+'1096023906'
 ```
 
 ## Normalizer
 The images are normalized by:
 - resizing them to the specified max size (default to 256 pixels)
-- optionally applying a squared, transparent canvas and centering the image on it, thus avoiding any deformation
+- optionally applying a squared, transparent/backgound canvas and centering the image on it, thus avoiding any deformation
 
 ```python
 norm = Normalizer(size=128, canvas=True)
@@ -77,13 +81,18 @@ The number of images is augmented by three orders of magnitude (depending on the
 Transformations are applied by using generators, thus saving memory consumption.
 
 ```python
-aug = Augmenter()
+aug = Augmenter(cutoff=.5)
+
 aug.count
-1000
+498
+
+aug('resources/bag.png')
+<generator object Augmenter.__call__ at 0x125354480>
 ```
 
 ## Persister
-Images are persisted upon normalization and augmentation, by passing a `BytesIO` object to the specified action function. The persister can be iterated upon function return value and label.
+Images are persisted upon normalization and augmentation, by passing a `BytesIO` object to the specified action function. 
+The persister supports iteration by yielding the image label and the function return value (typically the saved path), allowing to generate CSV files specific to cloud platforms (i.e. [Google Vision APIs](https://cloud.google.com/vision/automl/docs/prepare)).
 
 ```python
 def persist(name, data):
