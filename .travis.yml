@@ -1,0 +1,8 @@
+language: python
+python:
+  - '3.6.4'
+  - '3.7-dev'
+install:
+  - pip install -r requirements.txt
+script:
+  - python -m unittest discover -s imgaug -p '*'
