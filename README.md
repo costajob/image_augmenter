@@ -19,7 +19,7 @@ The scope of this library is to augment the dataset for an image classification 
 ## Setup
 
 ### Versions
-The library is compatible with python `3.7`.
+The library is compatible with python `3.6` on.
 
 ### Virtualenv
 We suggest to isolate your installation via python virtualenv:
