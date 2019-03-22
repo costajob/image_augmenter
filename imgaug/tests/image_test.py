@@ -1,5 +1,4 @@
 import unittest
-from io import BytesIO
 from imgaug import image
 
 
@@ -34,12 +33,11 @@ class TestImage(unittest.TestCase):
         img = norm('resources/bag.png')
         self.assertEqual(img.shape, (42, 64, 4))
 
-    def test_normalization_pil_io(self):
+    def test_normalization_stream(self):
         norm = image.Normalizer(size=64)
         with open('resources/bag.png', 'rb') as f:
-            stream = BytesIO(f.read())
-        img = norm(stream)
-        self.assertEqual(img.shape, (42, 64, 4))
+            img = norm(f)
+            self.assertEqual(img.shape, (42, 64, 4))
 
     def test_normalization_canvas(self):
         norm = image.Normalizer(size=64, canvas=True)

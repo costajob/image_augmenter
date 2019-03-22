@@ -7,10 +7,10 @@ class Persister:
     '''
     Synopsis
     --------
-    Accepts an image path as an input, normalise it and augment it by using the
-    specified collaborators.
-    Transforms each of the augmented image to a file-like object and calls the
-    specified function.
+    Accepts an image path as an input (a stream optionally), normalise it and 
+    augment it by using the specified collaborators.
+    Transforms each of the augmented image to stream-like object and calls the
+    specified action function.
 
     Examples
     --------
@@ -22,11 +22,10 @@ class Persister:
     JPG = 'jpg'
     PNG = 'png'
 
-    def __init__(self, name, action=lambda *args: args[0], label=None, labeller=image.Labeller(), normalizer=image.Normalizer(size=256, canvas=True), augmenter=image.Augmenter()):
-        self.name = name
+    def __init__(self, filename, stream=None, action=lambda *args: args[0], label=None, labeller=image.Labeller(), normalizer=image.Normalizer(size=256, canvas=True), augmenter=image.Augmenter()):
         self.action = action
-        self.label = label or labeller(name)
-        self.norm = normalizer(name)
+        self.label = label or labeller(filename)
+        self.norm = normalizer(stream or filename)
         self.ext = self._ext()
         self.augmenter = augmenter
 

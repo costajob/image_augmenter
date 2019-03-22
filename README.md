@@ -93,7 +93,8 @@ aug('resources/bag.png')
 ```
 
 ### Persister
-Images are persisted upon normalization and augmentation, by passing a `BytesIO` object to the specified action function. 
+Images are persisted upon normalization and augmentation, by specifying an action function that accepts the name of the file (original basename suffixed by an index) and a `BytesIO` object containing the image data stream.  
+The persister supports both a filename path and, optionally, a stream-like object (in case the file is not yet persisted to disk).  
 The persister supports iteration by yielding the image label and the function return value (typically the saved path), allowing to generate CSV files specific to cloud platforms (i.e. [Google Vision APIs](https://cloud.google.com/vision/automl/docs/prepare)).
 
 ```python
