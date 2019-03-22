@@ -97,10 +97,10 @@ Images are persisted upon normalization and augmentation, by passing a `BytesIO`
 The persister supports iteration by yielding the image label and the function return value (typically the saved path), allowing to generate CSV files specific to cloud platforms (i.e. [Google Vision APIs](https://cloud.google.com/vision/automl/docs/prepare)).
 
 ```python
-def persist(name, data):
+def persist(name, stream):
     filename = f'temp/{name}'
     with open(filename, 'wb') as f:
-        f.write(data.getvalue())
+        f.write(stream.getvalue())
     return filename
 
 pers = Persister('resources/skirt.jpg', action=perist)

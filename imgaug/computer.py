@@ -33,9 +33,9 @@ class Persister:
     def __iter__(self):
         for i, data in enumerate(self.augmenter(self.norm)):
             name = f'{self.label}_{i:03}.{self.ext}'
-            img = BytesIO()
-            plt.imsave(img, data)
-            filepath = self.action(name, img)
+            stream = BytesIO()
+            plt.imsave(stream, data)
+            filepath = self.action(name, stream)
             yield(self.label, filepath)
 
     def _ext(self):

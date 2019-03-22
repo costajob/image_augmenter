@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='image_augmenter',
-    version='0.1.6',
+    version='0.1.7',
     author='Michele Costa',
     author_email='costajob@gmail.com',
     description='A tiny python library to augment the images dataset aimed for a ML classification system',

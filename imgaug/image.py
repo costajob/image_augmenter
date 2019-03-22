@@ -1,5 +1,6 @@
 from math import floor
 from os import path
+from logging import debug, info
 from struct import unpack
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -8,7 +9,6 @@ from skimage.exposure import adjust_gamma
 from skimage.transform import AffineTransform, rescale, rotate, warp
 from skimage.util import random_noise
 import numpy as np
-from imgaug.logger import BASE as logger
 
 
 class Labeller:
@@ -89,31 +89,26 @@ class Normalizer:
             return np.array(img)
 
     def _resize(self, name):
-        img = self._img(name)
+        img = Image.open(name)
         if img.format == self.PNG:
             img = img.convert(self.RGBA)
         w, h = img.size
         _max = max(w, h)
         ratio = _max / self.size
         size = (int(w // ratio), int(h // ratio))
-        logger.info('resizing image to %r', size)
+        info('resizing image to %r', size)
         return img.resize(size)
-
-    def _img(self, name):
-        if hasattr(name, 'size'):
-            return name
-        return Image.open(name)
 
     def _canvas(self, img):
         size = (self.size, self.size)
         offset = self._offset(img)
         if self.bkg:
-            logger.info('applying background %s', path.basename(self.canvas))
+            info('applying background %s', path.basename(self.canvas))
             c = Image.open(self.canvas).convert(img.mode)
             c = c.resize(size)
             c.paste(img, offset, img.convert(self.RGBA))
         else:
-            logger.info('applying squared canvas %r', size)
+            info('applying squared canvas %r', size)
             c = Image.new(img.mode, size, self._color(img))
             c.paste(img, offset)
         return c
@@ -182,9 +177,10 @@ class Augmenter:
         img = self._img(name)
         yield img
         if self.cutoff:
-            logger.info('applying a set of %d transformations', self.count)
+            info('applying a set of %d transformations', self.count)
             for rng, tr in zip(self.ranges, self.transformers):
                 for val in rng:
+                    debug('applying %s(%r)', tr.__name__, val)
                     yield from tr(img, val)
 
     def _img(self, name):
