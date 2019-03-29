@@ -19,9 +19,9 @@ class TestImage(unittest.TestCase):
         self.assertEqual(label, 'XXM56A0V430JK4V814')
 
     def test_labeller_custom(self):
-        lbl = image.Labeller(digits=8)
-        label = lbl('resources/product_a_1.JPG')
-        self.assertEqual(label, 'producta')
+        lbl = image.Labeller(digits=40)
+        label = lbl('resources/corsa-rosso-saucony-koa-st-per-donna-rosso_2.jpg')
+        self.assertEqual(label, 'corsa-rosso-saucony-koa-st-per-donna-rosso')
 
     def test_labeller_plain(self):
         lbl = image.Labeller()

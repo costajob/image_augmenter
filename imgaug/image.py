@@ -33,15 +33,11 @@ class Labeller:
         self.separators = separators
 
     def __call__(self, name):
-        name = path.basename(name)
+        name, _ = path.basename(name).split('.')
         for sep in self.separators:
             label = self._tokenize(name, sep)
             if label:
                 return label
-        return self._plain(name)
-
-    def _plain(self, name):
-        name, _ = name.split('.')
         return name[:self.digits]
 
     def _tokenize(self, name, sep):
