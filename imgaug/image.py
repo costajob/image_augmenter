@@ -149,10 +149,11 @@ class Augmenter:
     --------
     >>> aug = Augmenter(cutoff=.5)
     >>> aug.count
-    498
+    502
     '''
 
     CUTOFF = 1.
+    CUTOFF_THRESHOLD = 6
     RESCALE_MODE = 'constant'
     NOISE_MODE = 'speckle'
     BLUR = range(2, 7, 1)
@@ -190,9 +191,10 @@ class Augmenter:
         return plt.imread(name)
 
     def _cut(self, rng):
-        if self.cutoff >= 1:
+        rng_len = len(rng)
+        if self.cutoff >= 1 or rng_len <= self.CUTOFF_THRESHOLD:
             return rng
-        cut = floor(len(rng) * self.cutoff) or 1
+        cut = floor(rng_len * self.cutoff) or 1
         return rng[:cut]
 
     def _count(self):
