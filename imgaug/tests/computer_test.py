@@ -14,7 +14,7 @@ class TestComputer(unittest.TestCase):
             files = list(pers)
             label, filepath = files[-1]
             self.assertEqual(label, 'gucci_bag')
-            self.assertEqual(filepath, 'gucci_bag_017.png')
+            self.assertEqual(filepath, 'gucci_bag_009.png')
 
 
 if __name__ == '__main__':

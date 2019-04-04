@@ -1,4 +1,3 @@
-from math import floor
 from os import path
 from logging import debug, info
 from struct import unpack
@@ -148,16 +147,15 @@ class Augmenter:
     Examples
     --------
     >>> aug = Augmenter(cutoff=.5)
-    >>> aug.count
-    502
+    >>> aug('resources/bag.png').__class__.__name__
+    'generator'
     '''
 
     CUTOFF = 1.
-    CUTOFF_THRESHOLD = 6
     RESCALE_MODE = 'constant'
     NOISE_MODE = 'speckle'
-    BLUR = range(2, 7, 1)
     FLIP = (np.s_[:, ::-1], np.s_[::-1, :])
+    BLUR = np.arange(2, 7, 1)
     GAMMA = np.arange(.1, 3.2, .02)
     NOISE = np.arange(.0005, .025, .0005)
     SCALE = np.arange(1.05, 3.6, .01)
@@ -166,7 +164,7 @@ class Augmenter:
     RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SKEW)
 
     def __init__(self, cutoff=CUTOFF):
-        self.cutoff = float(cutoff)
+        self.cutoff = float(cutoff) or self.CUTOFF
         self.ranges = [self._cut(rng) for rng in self.RANGES]
         self.count = self._count()
     
@@ -178,12 +176,11 @@ class Augmenter:
     def __call__(self, name):
         img = self._img(name)
         yield img
-        if self.cutoff:
-            info('applying a set of %d transformations', self.count)
-            for rng, tr in zip(self.ranges, self.transformers):
-                for val in rng:
-                    debug('applying %s(%r)', tr.__name__, val)
-                    yield from tr(img, val)
+        info('applying a set of %d transformations', self.count)
+        for rng, tr in zip(self.ranges, self.transformers):
+            for val in rng:
+                debug('applying %s(%r)', tr.__name__, val)
+                yield from tr(img, val)
 
     def _img(self, name):
         if isinstance(name, np.ndarray):
@@ -191,17 +188,17 @@ class Augmenter:
         return plt.imread(name)
 
     def _cut(self, rng):
-        rng_len = len(rng)
-        if self.cutoff >= 1 or rng_len <= self.CUTOFF_THRESHOLD:
+        if self.cutoff >= 1 or isinstance(rng, tuple):
             return rng
-        cut = floor(rng_len * self.cutoff) or 1
-        return rng[:cut]
+        else:
+            _min = rng.min()
+            start = _min if _min > 0 else _min * self.cutoff
+            stop = rng.max() * self.cutoff
+            step = f'{rng[1]-rng[0]:.4f}'
+            return np.arange(start, stop, float(step))
 
     def _count(self):
-        count = 1
-        if self.cutoff:
-            count = sum(len(r) for r in self.ranges) + 1
-        return count
+        return sum(len(r) for r in self.ranges) + 1
     
     def _tr_blur(self, img, axe):
         yield uniform_filter(img, size=(axe, axe, 1))

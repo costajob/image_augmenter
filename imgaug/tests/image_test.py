@@ -63,21 +63,31 @@ class TestImage(unittest.TestCase):
     def test_augmenting_attributes(self):
         aug = image.Augmenter()
         self.assertEqual(len(aug.transformers), 7)
-        self.assertEqual(aug.count, 1000)
     
     def test_augmenting(self):
         aug = image.Augmenter(.01)
-        images = list(aug('resources/bag.png'))
-        self.assertEqual(len(images), aug.count)
-        for img in images:
+        for img in aug('resources/bag.png'):
             self.assertEqual(img.shape, (200, 300, 3))
 
-    def test_augmenting_skip(self):
-        aug = image.Augmenter(0)
-        images = list(aug('resources/bag.png'))
-        self.assertEqual(aug.count, 1)
-        self.assertEqual(len(images), 1)
-        self.assertEqual(images[0].shape, (200, 300, 3))
+    def test_augmenting_one_tenth(self):
+        aug = image.Augmenter(.1)
+        self.assertEqual(aug.count, 72)
+
+    def test_augmenting_one_third(self):
+        aug = image.Augmenter(.33)
+        self.assertEqual(aug.count, 257)
+
+    def test_augmenting_one_half(self):
+        aug = image.Augmenter(.5)
+        self.assertEqual(aug.count, 444)
+
+    def test_augmenting_three_thirds(self):
+        aug = image.Augmenter(.75)
+        self.assertEqual(aug.count, 721)
+
+    def test_augmenting_all(self):
+        aug = image.Augmenter()
+        self.assertEqual(aug.count, 1000)
 
 
 if __name__ == '__main__':
