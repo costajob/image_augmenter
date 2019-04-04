@@ -75,7 +75,12 @@ class Normalizer:
     def __init__(self, size=SIZE, canvas=CANVAS):
         self.size = int(size)
         self.canvas = canvas
-        self.bkg = path.isfile(str(canvas))
+
+    @property
+    def is_bkg(self):
+        filepath = isinstance(self.canvas, str) and path.isfile(self.canvas)
+        stream = hasattr(self.canvas, 'read')
+        return filepath or stream
 
     def __call__(self, name):
         img = self._resize(name)
@@ -98,8 +103,8 @@ class Normalizer:
     def _canvas(self, img):
         size = (self.size, self.size)
         offset = self._offset(img)
-        if self.bkg:
-            info('applying background %s', path.basename(self.canvas))
+        if self.is_bkg:
+            info('applying background')
             c = Image.open(self.canvas).convert(img.mode)
             c = c.resize(size)
             c.paste(img, offset, img.convert(self.RGBA))

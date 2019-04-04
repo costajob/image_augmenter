@@ -49,10 +49,16 @@ class TestImage(unittest.TestCase):
         img = norm('resources/bag.png')
         self.assertEqual(img.shape, (64, 64, 4))
 
-    def test_normalization_bkg_canvas(self):
+    def test_normalization_bkg_path(self):
         norm = image.Normalizer(size=64, canvas='resources/office.png')
         img = norm('resources/bag.png')
         self.assertEqual(img.shape, (64, 64, 4))
+
+    def test_normalization_bkg_stream(self):
+        with open('resources/office.png', 'rb') as f:
+            norm = image.Normalizer(size=64, canvas=f)
+            img = norm('resources/bag.png')
+            self.assertEqual(img.shape, (64, 64, 4))
    
     def test_augmenting_attributes(self):
         aug = image.Augmenter()
