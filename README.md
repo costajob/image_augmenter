@@ -41,11 +41,6 @@ pip install -r requirements.txt
 The library is covered, by fast, isolated unit and doc testing (the latter to grant reliable documentation):
 ```shell
 python -m unittest discover -s imgaug -p '*'
-...................
-----------------------------------------------------------------------
-Ran 19 tests in 0.898s
-
-OK
 ```
 
 ## APIs
