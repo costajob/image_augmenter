@@ -137,6 +137,7 @@ class Augmenter:
     - rescaling and cropping
     - adding random noise
     - rotating
+    - shifting 
     - skewing
 
     Warning

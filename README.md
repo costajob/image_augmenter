@@ -74,14 +74,14 @@ img.shape
 ```
 
 ### Augmenter
-The number of images is augmented by three orders of magnitude (depending on the cutoff attribute) by applying different transformations to the original one.  
+The number of images is augmented by three orders of magnitude (depending on the cutoff float attribute) by applying different transformations to the original one.  
 Transformations are applied by using generators, thus saving memory consumption.
 
 ```python
-aug = Augmenter(cutoff=.5)
+aug = Augmenter(cutoff=1.)
 
 aug.count
-498
+1000
 
 aug('resources/bag.png')
 <generator object Augmenter.__call__ at 0x125354480>
