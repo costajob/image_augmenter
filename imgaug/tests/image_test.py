@@ -66,8 +66,8 @@ class TestImage(unittest.TestCase):
     
     def test_augmenting(self):
         aug = image.Augmenter(.01)
-        for img in aug('resources/bag.png'):
-            self.assertEqual(img.shape, (200, 300, 3))
+        for img in aug('resources/shirt.jpg'):
+            self.assertEqual(img.shape, (400, 304, 3))
 
     def test_augmenting_one_tenth(self):
         aug = image.Augmenter(.1)

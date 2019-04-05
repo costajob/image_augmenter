@@ -246,7 +246,7 @@ class Augmenter:
 
     def _shift(self, img, vector):
         tf = AffineTransform(translation=vector)
-        return warp(img, inverse_map=tf, mode='wrap', preserve_range=True)
+        return warp(img, inverse_map=tf, mode='wrap')
 
     def _RGB(self, img):
         return img.shape[-1] == 3
