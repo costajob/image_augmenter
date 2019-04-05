@@ -62,7 +62,7 @@ class TestImage(unittest.TestCase):
    
     def test_augmenting_attributes(self):
         aug = image.Augmenter()
-        self.assertEqual(len(aug.transformers), 7)
+        self.assertEqual(len(aug.transformers), 10)
     
     def test_augmenting(self):
         aug = image.Augmenter(.01)
@@ -71,11 +71,11 @@ class TestImage(unittest.TestCase):
 
     def test_augmenting_one_tenth(self):
         aug = image.Augmenter(.1)
-        self.assertEqual(aug.count, 72)
+        self.assertEqual(aug.count, 86)
 
     def test_augmenting_one_third(self):
         aug = image.Augmenter(.33)
-        self.assertEqual(aug.count, 257)
+        self.assertEqual(aug.count, 285)
 
     def test_augmenting_one_half(self):
         aug = image.Augmenter(.5)

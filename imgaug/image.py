@@ -155,13 +155,14 @@ class Augmenter:
     RESCALE_MODE = 'constant'
     NOISE_MODE = 'speckle'
     FLIP = (np.s_[:, ::-1], np.s_[::-1, :])
-    BLUR = np.arange(2, 7, 1)
-    GAMMA = np.arange(.1, 3.2, .02)
-    NOISE = np.arange(.0005, .025, .0005)
-    SCALE = np.arange(1.05, 3.6, .01)
-    ROTATE = np.arange(-155, 155, .6)
-    SKEW = np.arange(-.8, .8, .1)
-    RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SKEW)
+    BLUR = np.arange(2, 12, 1)
+    GAMMA = np.arange(.1, 2.6, .05)
+    NOISE = np.arange(.0005, .0300, .0005)
+    SCALE = np.arange(1.05, 2.3, .01)
+    ROTATE = np.arange(-155, 155, 0.7)
+    SHIFT = np.arange(3, 300, 3)
+    SKEW = np.arange(-.8, .8, .13)
+    RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SHIFT, SHIFT, SHIFT, SKEW)
 
     def __init__(self, cutoff=CUTOFF):
         self.cutoff = float(cutoff) or self.CUTOFF
@@ -224,9 +225,28 @@ class Augmenter:
         cval = 1. if self._RGB(img) else 0
         yield rotate(img, ang, cval=cval)
 
+    def _tr_shift(self, img, v):
+        h, w, _ = img.shape
+        if v < w and v < h:
+            yield self._shift(img, (v, v))
+
+    def _tr_shift_h(self, img, x):
+        _, w, _ = img.shape
+        if x < w:
+            yield self._shift(img, (x, 0))
+
+    def _tr_shift_v(self, img, y):
+        h, _, _ = img.shape
+        if y < h:
+            yield self._shift(img, (0, y))
+
     def _tr_skew(self, img, shear):
         tf = AffineTransform(shear=shear)
         yield warp(img, inverse_map=tf)
+
+    def _shift(self, img, vector):
+        tf = AffineTransform(translation=vector)
+        return warp(img, inverse_map=tf, mode='wrap', preserve_range=True)
 
     def _RGB(self, img):
         return img.shape[-1] == 3
