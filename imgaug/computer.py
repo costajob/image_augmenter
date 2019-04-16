@@ -1,4 +1,12 @@
+from datetime import datetime
+from glob import glob
+from os import path
 from io import BytesIO
+from logging import info
+from random import choices
+from string import ascii_letters, digits
+from tempfile import mkdtemp
+from zipfile import ZipFile
 from matplotlib import pyplot as plt
 from imgaug import image
 
@@ -40,3 +48,65 @@ class Persister:
     def _ext(self):
         _, _, c = self.norm.shape
         return self.PNG if c == 4 else self.JPG
+
+
+class Zipper:
+    '''
+    Synopsis
+    --------
+    Creates a compressed file by iterating files within the specified folder, recognizing
+    each label, creating an archive with label name, normalizing and augmenting the file
+    and putting them into the specified label-named archive.
+
+    Examples
+    --------
+    >>> zipper = Zipper('resources')
+    >>> len(list(zipper.files))
+    3
+    '''
+
+    MAXLEN = 11
+    EXTS = {'png', 'jpg', 'jpeg'}
+
+    def __init__(self, folder, labeller=image.Labeller(), normalizer=image.Normalizer(size=256, canvas=True), augmenter=image.Augmenter()):
+        self.files = self._files(folder)
+        self.labeller = labeller
+        self.norm = normalizer
+        self.augmenter = augmenter
+        self.zipname = path.abspath(f'dataset_{self.timestamp}.zip')
+    
+    @property
+    def timestamp(self):
+        return str(datetime.utcnow().timestamp()).replace('.', '')
+
+    def __call__(self):
+        info('creating compressed file %s', self.zipname)
+        with ZipFile(self.zipname, 'w') as zfile:
+            for filepath, archive in self:
+                zfile.write(filepath, arcname=archive)
+
+    def __iter__(self):
+        tmpdir = mkdtemp(prefix='images')
+        for filepath in self.files:
+            label = self.labeller(filepath)
+            norm = self.norm(filepath)
+            for data in self.augmenter(norm):
+                name = self._filename(filepath)
+                tmpname = path.join(tmpdir, name)
+                plt.imsave(tmpname, data)
+                archive = path.join(label, name)
+                yield(tmpname, archive)
+
+    def _files(self, folder):
+        return (f for f in glob(path.join(folder, '*')) if self._valid(f))
+
+    def _filename(self, filepath):
+        letters = ''.join(choices(ascii_letters + digits, k=self.MAXLEN))
+        return f'{letters}.{self._ext(filepath)}'
+
+    def _valid(self, filepath):
+        ext = self._ext(filepath)
+        return ext in self.EXTS
+
+    def _ext(self, filepath):
+        return filepath.rsplit('.', 1)[-1].lower()

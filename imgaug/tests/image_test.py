@@ -71,23 +71,23 @@ class TestImage(unittest.TestCase):
 
     def test_augmenting_one_tenth(self):
         aug = image.Augmenter(.1)
-        self.assertEqual(aug.count, 86)
+        self.assertEqual(aug.count, 61)
 
     def test_augmenting_one_third(self):
         aug = image.Augmenter(.33)
-        self.assertEqual(aug.count, 285)
+        self.assertEqual(aug.count, 203)
 
     def test_augmenting_one_half(self):
         aug = image.Augmenter(.5)
-        self.assertEqual(aug.count, 444)
+        self.assertEqual(aug.count, 317)
 
     def test_augmenting_three_thirds(self):
         aug = image.Augmenter(.75)
-        self.assertEqual(aug.count, 721)
+        self.assertEqual(aug.count, 512)
 
     def test_augmenting_all(self):
         aug = image.Augmenter()
-        self.assertEqual(aug.count, 1000)
+        self.assertEqual(aug.count, 710)
 
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@
   * [Normalizer](#normalizer)
   * [Augmenter](#augmenter)
   * [Persister](#persister)
+  * [Zipper](#zipper)
 
 
 ## Scope
@@ -74,14 +75,14 @@ img.shape
 ```
 
 ### Augmenter
-The number of images is augmented by three orders of magnitude (depending on the cutoff float attribute) by applying different transformations to the original one.  
+The number of images is augmented by two orders of magnitude (depending on the cutoff float attribute) by applying different transformations to the original one.  
 Transformations are applied by using generators, thus saving memory consumption.
 
 ```python
 aug = Augmenter(cutoff=1.)
 
 aug.count
-1000
+710
 
 aug('resources/bag.png')
 <generator object Augmenter.__call__ at 0x125354480>
@@ -102,4 +103,12 @@ def persist(name, stream):
 pers = Persister('resources/skirt.jpg', action=perist)
 for label, filename in pers:
     print(label, filename)
+```
+
+### Zipper
+In case you need an archive with each normalised augmentations within the recognised label subfolder, you can rely on the `Zipper` interface: it creates a ZIP file on current path, by scanning the specified folder for `PNG` or `JPG` images.
+
+```python
+zipper = Zipper('.resources/', normalizer=image.Normalizer(16), augmenter=image.Augmenter(.05))
+zipper()
 ```
