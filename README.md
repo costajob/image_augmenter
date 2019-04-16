@@ -79,11 +79,7 @@ The number of images is augmented by two orders of magnitude (depending on the c
 Transformations are applied by using generators, thus saving memory consumption.
 
 ```python
-aug = Augmenter(cutoff=1.)
-
-aug.count
-600
-
+aug = Augmenter(cutoff=.5)
 aug('resources/bag.png')
 <generator object Augmenter.__call__ at 0x125354480>
 ```

@@ -30,7 +30,7 @@ class Persister:
     JPG = 'jpg'
     PNG = 'png'
 
-    def __init__(self, filename, stream=None, action=lambda *args: args[0], label=None, labeller=image.Labeller(), normalizer=image.Normalizer(size=256, canvas=True), augmenter=image.Augmenter()):
+    def __init__(self, filename, stream=None, action=lambda *args: args[0], label=None, labeller=image.Labeller(), normalizer=image.Normalizer(), augmenter=image.Augmenter()):
         self.action = action
         self.label = label or labeller(filename)
         self.norm = normalizer(stream or filename)
@@ -65,15 +65,15 @@ class Zipper:
     3
     '''
 
-    MAXLEN = 11
+    MAXLEN = 16
     EXTS = {'png', 'jpg', 'jpeg'}
 
-    def __init__(self, folder, labeller=image.Labeller(), normalizer=image.Normalizer(size=256, canvas=True), augmenter=image.Augmenter()):
+    def __init__(self, folder, labeller=image.Labeller(), normalizer=image.Normalizer(), augmenter=image.Augmenter()):
         self.files = self._files(folder)
         self.labeller = labeller
         self.norm = normalizer
         self.augmenter = augmenter
-        self.zipname = path.abspath(f'dataset_{self.timestamp}.zip')
+        self.zipname = f'dataset_{self.timestamp}.zip'
     
     @property
     def timestamp(self):
@@ -90,19 +90,21 @@ class Zipper:
         for filepath in self.files:
             label = self.labeller(filepath)
             norm = self.norm(filepath)
+            ext = self._ext(filepath)
             for data in self.augmenter(norm):
-                name = self._filename(filepath)
+                name = self._filename(ext)
                 tmpname = path.join(tmpdir, name)
                 plt.imsave(tmpname, data)
                 archive = path.join(label, name)
                 yield(tmpname, archive)
 
     def _files(self, folder):
+        folder = path.expanduser(folder)
         return (f for f in glob(path.join(folder, '*')) if self._valid(f))
 
-    def _filename(self, filepath):
+    def _filename(self, ext):
         letters = ''.join(choices(ascii_letters + digits, k=self.MAXLEN))
-        return f'{letters}.{self._ext(filepath)}'
+        return f'{letters}.{ext}'
 
     def _valid(self, filepath):
         ext = self._ext(filepath)

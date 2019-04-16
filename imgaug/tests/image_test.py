@@ -60,26 +60,10 @@ class TestImage(unittest.TestCase):
             img = norm('resources/bag.png')
             self.assertEqual(img.shape, (64, 64, 4))
    
-    def test_augmenting_attributes(self):
-        aug = image.Augmenter()
-        self.assertEqual(len(aug.transformers), 10)
-    
     def test_augmenting(self):
         aug = image.Augmenter(.01)
         for img in aug('resources/shirt.jpg'):
             self.assertEqual(img.shape, (400, 304, 3))
-
-    def test_augmenting_one_tenth(self):
-        aug = image.Augmenter(.1)
-        self.assertEqual(aug.count, 62)
-
-    def test_augmenting_one_half(self):
-        aug = image.Augmenter(.5)
-        self.assertEqual(aug.count, 301)
-
-    def test_augmenting_all(self):
-        aug = image.Augmenter()
-        self.assertEqual(aug.count, 600)
 
 
 if __name__ == '__main__':

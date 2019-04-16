@@ -1,5 +1,5 @@
 from os import path
-from logging import debug, info
+from logging import info
 from struct import unpack
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -64,7 +64,7 @@ class Normalizer:
     (128, 128, 4)
     '''
 
-    SIZE = 32
+    SIZE = 64
     TRANSPARENT = (255, 0, 0, 0)
     WHITE = (255, 255, 255)
     CANVAS = False
@@ -158,30 +158,31 @@ class Augmenter:
     FLIP = (np.s_[:, ::-1], np.s_[::-1, :])
     BLUR = np.arange(2, 12, 1)
     GAMMA = np.arange(.1, 2.55, .05)
-    NOISE = np.arange(.0005, .0300, .001)
-    SCALE = np.arange(1.05, 2.3, .05)
-    ROTATE = np.arange(-155, 155, 1.8)
-    SHIFT = np.arange(3, 300, 3)
-    SKEW = np.arange(-.8, .8, .13)
+    NOISE = np.arange(.001, .0301, .001)
+    SCALE = np.arange(1.05, 2.35, .05)
+    ROTATE = np.arange(-155, 156, 2.)
+    SHIFT = np.arange(1, 301, 1)
+    SKEW = np.arange(-.8, .9, .13)
     RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SHIFT, SHIFT, SHIFT, SKEW)
 
     def __init__(self, cutoff=CUTOFF):
         self.cutoff = float(cutoff) or self.CUTOFF
-        self.ranges = [self._cut(rng) for rng in self.RANGES]
-        self.count = self._count()
     
+    @property
+    def ranges(self):
+        return (self._cut(rng) for rng in self.RANGES)
+
     @property
     def transformers(self):
         names = sorted(tr for tr in dir(self) if tr.startswith('_tr'))
-        return [getattr(self, name) for name in names]
+        return (getattr(self, name) for name in names)
 
     def __call__(self, name):
+        info('apply transformations to image')
         img = self._img(name)
         yield img
-        info('applying a set of %d transformations', self.count)
         for rng, tr in zip(self.ranges, self.transformers):
             for val in rng:
-                debug('applying %s(%r)', tr.__name__, val)
                 yield from tr(img, val)
 
     def _img(self, name):
@@ -196,9 +197,6 @@ class Augmenter:
             sl = round(len(rng) * self.cutoff) or 1
             return rng[:sl]
 
-    def _count(self):
-        return sum(len(r) for r in self.ranges) + 1
-    
     def _tr_blur(self, img, axe):
         yield uniform_filter(img, size=(axe, axe, 1))
 
