@@ -82,7 +82,7 @@ Transformations are applied by using generators, thus saving memory consumption.
 aug = Augmenter(cutoff=1.)
 
 aug.count
-710
+600
 
 aug('resources/bag.png')
 <generator object Augmenter.__call__ at 0x125354480>

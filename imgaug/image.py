@@ -157,10 +157,10 @@ class Augmenter:
     NOISE_MODE = 'speckle'
     FLIP = (np.s_[:, ::-1], np.s_[::-1, :])
     BLUR = np.arange(2, 12, 1)
-    GAMMA = np.arange(.1, 2.6, .05)
-    NOISE = np.arange(.0005, .0300, .0005)
-    SCALE = np.arange(1.05, 2.3, .015)
-    ROTATE = np.arange(-155, 155, 1.6)
+    GAMMA = np.arange(.1, 2.55, .05)
+    NOISE = np.arange(.0005, .0300, .001)
+    SCALE = np.arange(1.05, 2.3, .05)
+    ROTATE = np.arange(-155, 155, 1.8)
     SHIFT = np.arange(3, 300, 3)
     SKEW = np.arange(-.8, .8, .13)
     RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SHIFT, SHIFT, SHIFT, SKEW)
@@ -193,11 +193,8 @@ class Augmenter:
         if self.cutoff >= 1 or isinstance(rng, tuple):
             return rng
         else:
-            _min = rng.min()
-            start = _min if _min > 0 else _min * self.cutoff
-            stop = rng.max() * self.cutoff
-            step = f'{rng[1]-rng[0]:.4f}'
-            return np.arange(start, stop, float(step))
+            sl = round(len(rng) * self.cutoff) or 1
+            return rng[:sl]
 
     def _count(self):
         return sum(len(r) for r in self.ranges) + 1

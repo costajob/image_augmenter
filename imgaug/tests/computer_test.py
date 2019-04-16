@@ -14,7 +14,7 @@ class TestComputer(unittest.TestCase):
             files = list(pers)
             label, filepath = files[-1]
             self.assertEqual(label, 'gucci_bag')
-            self.assertEqual(filepath, 'gucci_bag_005.png')
+            self.assertEqual(filepath, 'gucci_bag_012.png')
 
     def test_zipper(self):
         zipper = computer.Zipper('resources', normalizer=image.Normalizer(16), augmenter=image.Augmenter(.05))
