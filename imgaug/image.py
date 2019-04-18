@@ -1,13 +1,10 @@
 from os import path
-from logging import info
+from logging import debug, info
 from struct import unpack
 from matplotlib import pyplot as plt
-from PIL import Image
-from scipy.ndimage import uniform_filter
-from skimage.exposure import adjust_gamma
-from skimage.transform import AffineTransform, rescale, rotate, warp
-from skimage.util import random_noise
 import numpy as np
+from PIL import Image
+from imgaug import filters
 
 
 class Labeller:
@@ -130,20 +127,9 @@ class Augmenter:
     Synopsis
     --------
     Performs data augmentation on the specified Numpy image by applying a set of 
-    transformations:
-    - blurring
-    - flipping
-    - adjusting gamma
-    - rescaling and cropping
-    - adding random noise
-    - rotating
-    - shifting 
-    - skewing
-
-    Warning
-    -------
-    The transformers methods are collected bu iterating on attributes starting with 
-    the prefix '_tr': be aware of that when extending this class.
+    transformations by applying a list of predefined filters.
+    Filter is expected to be a callable object accepting the image data and a
+    value, that falls within the acceptable VALUES range.
 
     Examples
     --------
@@ -153,37 +139,21 @@ class Augmenter:
     '''
 
     CUTOFF = 1.
-    RESCALE_MODE = 'constant'
-    NOISE_MODE = 'speckle'
-    FLIP = (np.s_[:, ::-1], np.s_[::-1, :])
-    BLUR = np.arange(2, 12, 1)
-    GAMMA = np.arange(.1, 2.55, .05)
-    NOISE = np.arange(.001, .0301, .001)
-    SCALE = np.arange(1.05, 2.35, .05)
-    ROTATE = np.arange(-155, 156, 2.)
-    SHIFT = np.arange(1, 301, 1)
-    SKEW = np.arange(-.8, .9, .13)
-    RANGES = (BLUR, FLIP, GAMMA, NOISE, SCALE, ROTATE, SHIFT, SHIFT, SHIFT, SKEW)
+    FILTERS = (filters.Blur(), filters.Flip(), filters.Gamma(), filters.Gaussian(), filters.Noise(), filters.Rescale(), filters.Rotate(), filters.Shift('*'), filters.Shift('h'), filters.Shift('v'), filters.Skew(), filters.Pixel('max'), filters.Pixel('median'), filters.Pixel('min'), filters.Pixel('mode'), filters.Unsharp())
 
     def __init__(self, cutoff=CUTOFF):
         self.cutoff = float(cutoff) or self.CUTOFF
     
-    @property
-    def ranges(self):
-        return (self._cut(rng) for rng in self.RANGES)
-
-    @property
-    def transformers(self):
-        names = sorted(tr for tr in dir(self) if tr.startswith('_tr'))
-        return (getattr(self, name) for name in names)
-
     def __call__(self, name):
         info('apply transformations to image')
         img = self._img(name)
         yield img
-        for rng, tr in zip(self.ranges, self.transformers):
-            for val in rng:
-                yield from tr(img, val)
+        for _filter in self.FILTERS:
+            for val in self._cut(_filter.VALUES):
+                filtered = _filter(img, val)
+                if filtered is not None:
+                    debug('applied filter %s with value %s', _filter.__class__.__name__, val)
+                    yield(filtered)
 
     def _img(self, name):
         if isinstance(name, np.ndarray):
@@ -193,56 +163,5 @@ class Augmenter:
     def _cut(self, rng):
         if self.cutoff >= 1 or isinstance(rng, tuple):
             return rng
-        else:
-            sl = round(len(rng) * self.cutoff) or 1
-            return rng[:sl]
-
-    def _tr_blur(self, img, axe):
-        yield uniform_filter(img, size=(axe, axe, 1))
-
-    def _tr_flip(self, img, sl):
-        yield img[sl]
-
-    def _tr_gamma(self, img, gm):
-        yield adjust_gamma(img, gamma=gm, gain=.9)
-
-    def _tr_noise(self, img, var):
-        yield random_noise(img, mode=self.NOISE_MODE, var=var)
-
-    def _tr_rescale(self, img, sc):
-        _data = rescale(img, sc, mode=self.RESCALE_MODE, anti_aliasing=True, multichannel=True)
-        h, w, _ = _data.shape
-        y, x, _ = img.shape
-        cx = w // 2 - (x // 2)
-        cy = h // 2 - (y // 2)
-        yield _data[cy:cy+y, cx:cx+x, :]
-
-    def _tr_rotate(self, img, ang):
-        cval = 1. if self._RGB(img) else 0
-        yield rotate(img, ang, cval=cval)
-
-    def _tr_shift(self, img, v):
-        h, w, _ = img.shape
-        if v < w and v < h:
-            yield self._shift(img, (v, v))
-
-    def _tr_shift_h(self, img, x):
-        _, w, _ = img.shape
-        if x < w:
-            yield self._shift(img, (x, 0))
-
-    def _tr_shift_v(self, img, y):
-        h, _, _ = img.shape
-        if y < h:
-            yield self._shift(img, (0, y))
-
-    def _tr_skew(self, img, shear):
-        tf = AffineTransform(shear=shear)
-        yield warp(img, inverse_map=tf)
-
-    def _shift(self, img, vector):
-        tf = AffineTransform(translation=vector)
-        return warp(img, inverse_map=tf, mode='wrap')
-
-    def _RGB(self, img):
-        return img.shape[-1] == 3
+        sl = round(len(rng) * self.cutoff) or 1
+        return rng[:sl]

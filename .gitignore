@@ -47,3 +47,6 @@ venv.bak/
 
 # Mac OS
 .DS_Store
+
+# temp dir
+temp/
