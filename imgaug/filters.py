@@ -108,7 +108,7 @@ class Skew:
 
 
 class Pixel:
-    VALUES = range(1, 14, 2)
+    VALUES = range(3, 14, 2)
     FILTERS = {'max': MaxFilter, 'median': MedianFilter, 'min': MinFilter, 'mode': ModeFilter}
 
     def __init__(self, _filter):
