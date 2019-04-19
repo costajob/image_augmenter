@@ -16,7 +16,7 @@ class TestComputer(unittest.TestCase):
             self.assertEqual(label, 'gucci_bag')
 
     def test_zipper(self):
-        zipper = computer.Zipper('resources', normalizer=image.Normalizer(16), augmenter=image.Augmenter(.01))
+        zipper = computer.Zipper('resources', size=8, cutoff=.01)
         for _, archive in zipper:
             if 'shirt' in archive:
                 self.assertTrue(archive.endswith('.jpg'))

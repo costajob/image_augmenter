@@ -66,13 +66,14 @@ class Zipper:
     '''
 
     MAXLEN = 16
+    SIZE = 64
     EXTS = {'png', 'jpg', 'jpeg'}
 
-    def __init__(self, folder, labeller=image.Labeller(), normalizer=image.Normalizer(), augmenter=image.Augmenter()):
+    def __init__(self, folder, size=SIZE, cutoff=1., labeller=image.Labeller(), normalizer_cls=image.Normalizer, augmenter_cls=image.Augmenter):
         self.files = self._files(folder)
         self.labeller = labeller
-        self.norm = normalizer
-        self.augmenter = augmenter
+        self.norm = normalizer_cls(size)
+        self.augmenter = augmenter_cls(cutoff)
         self.zipname = f'dataset_{self.timestamp}.zip'
     
     @property

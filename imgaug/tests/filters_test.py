@@ -47,13 +47,13 @@ class TestFilters(unittest.TestCase):
         with patch.object(filters, 'rotate') as mocked:
             f = filters.Rotate()
             f(self.img, -60)
-            mocked.assert_called_with(self.img, -60, cval=1)
+            mocked.assert_called_with(self.img, -60, cval=1, mode='edge')
 
     def test_shift_valid(self):
-        h, w, _ = self.img.shape
-        self.assertFalse(filters.Shift()._valid(self.img, w+1))
-        self.assertFalse(filters.Shift('h')._valid(self.img, w+1))
-        self.assertFalse(filters.Shift('v')._valid(self.img, h+1))
+        h, w, _ = [d // 2 for d in self.img.shape]
+        self.assertFalse(filters.Shift()._valid(self.img, min(w, h)))
+        self.assertFalse(filters.Shift('h')._valid(self.img, w))
+        self.assertFalse(filters.Shift('v')._valid(self.img, h))
 
     def test_shift_vectors(self):
         self.assertEqual(filters.Shift()._vector(10), (10, 10))
@@ -64,18 +64,24 @@ class TestFilters(unittest.TestCase):
         with patch.object(filters, 'warp') as mocked, patch.object(filters, 'AffineTransform', return_value=(10, 10)) as tr:
             f = filters.Shift()
             f(self.img, 10)
-            mocked.assert_called_with(self.img, inverse_map=tr(), mode='wrap')
+            mocked.assert_called_with(self.img, inverse_map=tr(), mode='edge')
 
     def test_skew(self):
         with patch.object(filters, 'warp') as mocked, patch.object(filters, 'AffineTransform', return_value=.3) as tr:
             f = filters.Skew()
             f(self.img, .3)
-            mocked.assert_called_with(self.img, inverse_map=tr())
+            mocked.assert_called_with(self.img, inverse_map=tr(), mode='edge')
 
     def test_pixel(self):
         f = filters.Pixel('max')
         self.assertEqual(f.filter.__class__, filters.MaxFilter.__class__)
         self.assertTrue(callable(f))
+
+    def test_pixel_oversizes(self):
+        f = filters.Pixel('max')
+        img = filters.np.resize(self.img, (64, 64, 3))
+        self.assertIsNone(f(img, 5))
+        self.assertIsNotNone(f(img, 3))
 
     def test_unsharp(self):
         f = filters.Unsharp()

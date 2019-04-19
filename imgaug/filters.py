@@ -8,7 +8,7 @@ from skimage.util import random_noise
 
 
 class Blur:
-    VALUES = range(2, 10, 1)
+    VALUES = range(2, 8, 1)
 
     def __call__(self, img, axe):
         return uniform_filter(img, size=(axe, axe, 1))
@@ -45,7 +45,7 @@ class Noise:
 
 
 class Rescale:
-    VALUES = np.arange(1.05, 2.35, .05)
+    VALUES = np.arange(1.05, 2.05, .03)
     MODE = 'constant'
 
     def __call__(self, img, sc):
@@ -58,18 +58,22 @@ class Rescale:
 
 
 class Rotate:
-    VALUES = range(-155, 156, 2)
+    VALUES = range(-155, 156, 1)
+    MODE = 'edge'
 
     def __call__(self, img, ang):
-        cval = 1. if self._RGB(img) else 0
-        return rotate(img, ang, cval=cval)
+        if ang:
+            cval = 1. if self._RGB(img) else 0
+            return rotate(img, ang, cval=cval, mode=self.MODE)
 
     def _RGB(self, img):
         return img.shape[-1] == 3
 
 
 class Shift:
-    VALUES = range(1, 512, 1)
+    VALUES = range(-512, 512, 1)
+    MODE = 'edge'
+    RATIO = 3
     VERTICAL = 'v'
     HORIZONTAL = 'h'
 
@@ -77,47 +81,62 @@ class Shift:
         self.vertical = mode == self.VERTICAL
         self.horizontal = mode == self.HORIZONTAL
 
-    def __call__(self, img, v):
-        if self._valid(img, v):
-            vector = self._vector(v)
+    def __call__(self, img, vec):
+        if self._valid(img, vec):
+            vector = self._vector(vec)
             tf = AffineTransform(translation=vector)
-            return warp(img, inverse_map=tf, mode='wrap')
+            return warp(img, inverse_map=tf, mode=self.MODE)
 
-    def _vector(self, v):
+    def _vector(self, vec):
         if self.vertical:
-            return (0, v)
+            return (0, vec)
         elif self.horizontal:
-            return (v, 0)
-        return (v, v)
+            return (vec, 0)
+        return (vec, vec)
 
-    def _valid(self, img, v):
-        h, w, _ = img.shape
-        if self.vertical:
-            return v < h
-        elif self.horizontal:
-            return v < w
-        return v < w and v < h
+    def _valid(self, img, vec):
+        if vec:
+            vec = abs(vec)
+            h, w, _ = [d // self.RATIO for d in img.shape]
+            if self.vertical:
+                return vec < h
+            elif self.horizontal:
+                return vec < w
+            return vec < min(w, h)
 
 
 class Skew:
-    VALUES = np.arange(-.8, .9, .13)
+    VALUES = np.arange(-.3, .4, .05)
+    MODE = 'edge'
+    MIN = .09
 
     def __call__(self, img, shear):
-        tf = AffineTransform(shear=shear)
-        return warp(img, inverse_map=tf)
+        if abs(shear) > self.MIN:
+            tf = AffineTransform(shear=shear)
+            return warp(img, inverse_map=tf, mode=self.MODE)
 
 
 class Pixel:
-    VALUES = range(3, 14, 2)
+    VALUES = range(3, 12, 2)
     FILTERS = {'max': MaxFilter, 'median': MedianFilter, 'min': MinFilter, 'mode': ModeFilter}
+    OVERSIZES = {300: 7, 200: 5, 100: 3}
 
     def __init__(self, _filter):
         self.filter = self.FILTERS.get(_filter, MinFilter)
 
     def __call__(self, img, size):
+        if self._oversized(img, size):
+            return
         img = Image.fromarray(img)
         filtered = img.filter(self.filter(size))
         return np.array(filtered)
+
+    def _oversized(self, img, size):
+        h, w, _ = img.shape
+        dim = min(h, w)
+        for d, s in self.OVERSIZES.items():
+            if dim < d and size > s:
+                return True
 
 
 class Unsharp:
