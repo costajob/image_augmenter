@@ -145,7 +145,7 @@ class Augmenter:
         self.cutoff = float(cutoff) or self.CUTOFF
     
     def __call__(self, name):
-        info(f'apply transformations to {name}')
+        info('apply transformations to image')
         img = self._img(name)
         yield img
         for _filter in self.FILTERS:

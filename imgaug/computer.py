@@ -91,6 +91,7 @@ class Zipper:
         tmpdir = mkdtemp(prefix='images')
         for filepath in self.files:
             label = self.labeller(filepath)
+            info(f'processing label {label}')
             norm = self.norm(filepath)
             ext = self._ext(filepath)
             for i, data in enumerate(self.augmenter(norm)):
