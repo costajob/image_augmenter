@@ -65,7 +65,7 @@ class Zipper:
     3
     '''
 
-    MAXLEN = 16
+    MAXLEN = 13
     SIZE = 64
     EXTS = {'png', 'jpg', 'jpeg'}
 
@@ -75,6 +75,7 @@ class Zipper:
         self.norm = normalizer_cls(size)
         self.augmenter = augmenter_cls(cutoff)
         self.zipname = f'dataset_{self.timestamp}.zip'
+        self.basename = self._basename()
     
     @property
     def timestamp(self):
@@ -92,8 +93,8 @@ class Zipper:
             label = self.labeller(filepath)
             norm = self.norm(filepath)
             ext = self._ext(filepath)
-            for data in self.augmenter(norm):
-                name = self._filename(ext)
+            for i, data in enumerate(self.augmenter(norm)):
+                name = f'{self.basename}{i:03}.{ext}'
                 tmpname = path.join(tmpdir, name)
                 plt.imsave(tmpname, data)
                 archive = path.join(label, name)
@@ -103,9 +104,8 @@ class Zipper:
         folder = path.expanduser(folder)
         return (f for f in glob(path.join(folder, '*')) if self._valid(f))
 
-    def _filename(self, ext):
-        letters = ''.join(choices(ascii_letters + digits, k=self.MAXLEN))
-        return f'{letters}.{ext}'
+    def _basename(self):
+        return ''.join(choices(ascii_letters + digits, k=self.MAXLEN))
 
     def _valid(self, filepath):
         ext = self._ext(filepath)
