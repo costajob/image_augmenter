@@ -75,7 +75,6 @@ class Zipper:
         self.norm = normalizer_cls(size)
         self.augmenter = augmenter_cls(cutoff)
         self.zipname = f'dataset_{self.timestamp}.zip'
-        self.basename = self._basename()
     
     @property
     def timestamp(self):
@@ -94,8 +93,9 @@ class Zipper:
             info(f'processing label {label}')
             norm = self.norm(filepath)
             ext = self._ext(filepath)
+            basename = self._basename()
             for i, data in enumerate(self.augmenter(norm)):
-                name = f'{self.basename}{i:03}.{ext}'
+                name = f'{basename}{i:03}.{ext}'
                 tmpname = path.join(tmpdir, name)
                 plt.imsave(tmpname, data)
                 archive = path.join(label, name)

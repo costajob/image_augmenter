@@ -18,8 +18,6 @@ class TestComputer(unittest.TestCase):
     def test_zipper(self):
         zipper = computer.Zipper('resources', size=8, cutoff=.01)
         for _, archive in zipper:
-            base = computer.path.basename(archive)
-            self.assertTrue(base.startswith(zipper.basename))
             if 'shirt' in archive:
                 self.assertTrue(archive.endswith('.jpg'))
             else:
