@@ -99,7 +99,7 @@ class Zipper:
         count = 0
         accumulator = []
         for filepath in self.files:
-            info(f'processing file {filepath}')
+            info(f'processing file {path.basename(filepath)}')
             basename = self._basename()
             label = self.labeller(filepath)
             norm = self.norm(filepath)
