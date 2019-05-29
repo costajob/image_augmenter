@@ -17,11 +17,18 @@ class TestComputer(unittest.TestCase):
 
     def test_zipper(self):
         zipper = computer.Zipper('resources', size=8, cutoff=.01)
-        for _, archive in zipper:
-            if 'shirt' in archive:
-                self.assertTrue(archive.endswith('.jpg'))
-            else:
-                self.assertTrue(archive.endswith('.png'))
+        for accumulator in zipper:
+            for _, archive in accumulator:
+                if 'shirt' in archive:
+                    self.assertTrue(archive.endswith('.jpg'))
+                else:
+                    self.assertTrue(archive.endswith('.png'))
+
+    def test_zipper_x_zip(self):
+        zipper = computer.Zipper('resources', x_zip=15, size=8, cutoff=.01)
+        for i, accumulator in enumerate(zipper):
+            assert len(accumulator) <= 15
+        self.assertEqual(i, 3)
 
 
 if __name__ == '__main__':

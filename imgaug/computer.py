@@ -54,9 +54,13 @@ class Zipper:
     '''
     Synopsis
     --------
-    Creates a compressed file by iterating files within the specified folder, recognizing
-    each label, creating an archive with label name, normalizing and augmenting the file
-    and putting them into the specified label-named archive.
+    Creates a set of compressed files by: 
+    * iterating images within the specified folder
+    * recognizing each label
+    * creating an archive with label name
+    * normalizing and augmenting the image
+    * archive images within the specified label-named folder
+    * generating a distinct compressed file by checking the x-zip attribute
 
     Examples
     --------
@@ -68,38 +72,50 @@ class Zipper:
     MAXLEN = 13
     SIZE = 64
     EXTS = {'png', 'jpg', 'jpeg'}
+    X_ZIP = 15000
 
-    def __init__(self, folder, size=SIZE, cutoff=1., labeller=image.Labeller(), normalizer_cls=image.Normalizer, augmenter_cls=image.Augmenter):
+    def __init__(self, folder, size=SIZE, x_zip=X_ZIP, cutoff=1., labeller=image.Labeller(), normalizer_cls=image.Normalizer, augmenter_cls=image.Augmenter):
         self.files = self._files(folder)
         self.labeller = labeller
         self.norm = normalizer_cls(size)
         self.augmenter = augmenter_cls(cutoff)
-        self.zipname = f'dataset_{self.timestamp}.zip'
+        self.x_zip = int(x_zip)
+        self.zipname = f'dataset_{self.timestamp}'
     
     @property
     def timestamp(self):
         return str(datetime.utcnow().timestamp()).replace('.', '')
 
     def __call__(self):
-        info('creating compressed file %s', self.zipname)
-        with ZipFile(self.zipname, 'w') as zfile:
-            for filepath, archive in self:
-                zfile.write(filepath, arcname=archive)
+        for i, accumulator in enumerate(self):
+            zipname = f'{self.zipname}{i:02}.zip'
+            info('creating compressed file %s', zipname)
+            with ZipFile(zipname, 'w') as zfile:
+                for filepath, archive in accumulator:
+                    zfile.write(filepath, arcname=archive)
 
     def __iter__(self):
         tmpdir = mkdtemp(prefix='images')
+        count = 0
+        accumulator = []
         for filepath in self.files:
+            info(f'processing file {filepath}')
+            basename = self._basename()
             label = self.labeller(filepath)
-            info(f'processing label {label}')
             norm = self.norm(filepath)
             ext = self._ext(filepath)
-            basename = self._basename()
             for i, data in enumerate(self.augmenter(norm)):
+                count += 1
                 name = f'{basename}{i:03}.{ext}'
                 tmpname = path.join(tmpdir, name)
                 plt.imsave(tmpname, data)
                 archive = path.join(label, name)
-                yield(tmpname, archive)
+                accumulator.append((tmpname, archive))
+                if count % self.x_zip == 0:
+                    yield(accumulator)
+                    accumulator = []
+        if accumulator:
+            yield(accumulator)
 
     def _files(self, folder):
         folder = path.expanduser(folder)
