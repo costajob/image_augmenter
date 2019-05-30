@@ -3,6 +3,7 @@ from glob import glob
 from os import path
 from io import BytesIO
 from logging import info
+from multiprocessing import Process
 from random import choices
 from string import ascii_letters, digits
 from tempfile import mkdtemp
@@ -72,7 +73,7 @@ class Zipper:
     MAXLEN = 13
     SIZE = 64
     EXTS = {'png', 'jpg', 'jpeg'}
-    X_ZIP = 15000
+    X_ZIP = 30000
 
     def __init__(self, folder, size=SIZE, x_zip=X_ZIP, cutoff=1., labeller=image.Labeller(), normalizer_cls=image.Normalizer, augmenter_cls=image.Augmenter):
         self.files = self._files(folder)
@@ -89,10 +90,9 @@ class Zipper:
     def __call__(self):
         for i, accumulator in enumerate(self):
             zipname = f'{self.zipname}{i:02}.zip'
-            info('creating compressed file %s', zipname)
-            with ZipFile(zipname, 'w') as zfile:
-                for filepath, archive in accumulator:
-                    zfile.write(filepath, arcname=archive)
+            p = Process(target=self._archive, args=(zipname, accumulator))
+            p.start()
+            p.join()
 
     def __iter__(self):
         tmpdir = mkdtemp(prefix='images')
@@ -116,6 +116,12 @@ class Zipper:
                     accumulator = []
         if accumulator:
             yield(accumulator)
+
+    def _archive(self, zipname, accumulator):
+        info('creating compressed file %s', zipname)
+        with ZipFile(zipname, 'w') as zfile:
+            for filepath, archive in accumulator:
+                zfile.write(filepath, arcname=archive)
 
     def _files(self, folder):
         folder = path.expanduser(folder)
